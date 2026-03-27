@@ -6,7 +6,6 @@ export async function requirePdfFile(request: FastifyRequest, reply: FastifyRepl
   }
 
   const data = await request.file();
-
   if (!data) {
     return reply.status(400).send({ ok: false, error: "No file uploaded" });
   }

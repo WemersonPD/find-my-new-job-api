@@ -1,6 +1,6 @@
-import type { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import { failure } from "@/shared/types/response";
 import { TEN_MB } from "@/shared/constants";
+import { failure } from "@/shared/types/response";
+import type { FastifyError, FastifyReply, FastifyRequest } from "fastify";
 
 export function errorHandler(error: FastifyError, _request: FastifyRequest, reply: FastifyReply) {
   // @fastify/multipart file size exceeded

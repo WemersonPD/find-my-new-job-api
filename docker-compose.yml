@@ -5,9 +5,11 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./stirling-data:/configs
+      - stirling-data:/configs
     environment:
-      - DOCKER_ENABLE_SECURITY=true
-      - SECURITY_INITIALLOGIN_USERNAME=${STIRLING_USERNAME}
-      - SECURITY_INITIALLOGIN_PASSWORD=${STIRLING_PASSWORD}
+      - DOCKER_ENABLE_SECURITY=false
+      - SECURITY_ENABLELOGIN=false
     restart: unless-stopped
+
+volumes:
+  stirling-data:

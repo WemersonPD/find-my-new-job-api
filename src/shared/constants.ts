@@ -1,1 +1,1 @@
-export const TEN_MB = 10 * 1024 * 1024
+export const TEN_MB = 10 * 1024 * 1024;

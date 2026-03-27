@@ -1,14 +1,16 @@
 import { env } from "@/shared/environment";
 
-const authHeader = `Basic ${Buffer.from(`${env.STIRLING_USERNAME}:${env.STIRLING_PASSWORD}`).toString("base64")}`;
-
 async function extractText(fileBuffer: Buffer, filename: string): Promise<string> {
   const formData = new FormData();
-  formData.append("fileInput", new Blob([new Uint8Array(fileBuffer)], { type: "application/pdf" }), filename);
+  formData.append(
+    "fileInput",
+    new Blob([new Uint8Array(fileBuffer)], { type: "application/pdf" }),
+    filename,
+  );
+  formData.append("outputFormat", "txt");
 
-  const response = await fetch(`${env.STIRLING_URL}/api/v1/misc/extract-text`, {
+  const response = await fetch(`${env.STIRLING_URL}/api/v1/convert/pdf/text`, {
     method: "POST",
-    headers: { Authorization: authHeader },
     body: formData,
   });
 
@@ -16,18 +18,20 @@ async function extractText(fileBuffer: Buffer, filename: string): Promise<string
     throw new Error(`Stirling extract-text failed: ${response.status}`);
   }
 
-  const data = (await response.json()) as { text?: string; extractedText?: string };
-  return data.text ?? data.extractedText ?? "";
+  return response.text();
 }
 
 async function ocrPdf(fileBuffer: Buffer, filename: string): Promise<string> {
   const formData = new FormData();
-  formData.append("fileInput", new Blob([new Uint8Array(fileBuffer)], { type: "application/pdf" }), filename);
+  formData.append(
+    "fileInput",
+    new Blob([new Uint8Array(fileBuffer)], { type: "application/pdf" }),
+    filename,
+  );
   formData.append("languages", "eng");
 
   const response = await fetch(`${env.STIRLING_URL}/api/v1/misc/ocr-pdf`, {
     method: "POST",
-    headers: { Authorization: authHeader },
     body: formData,
   });
 
