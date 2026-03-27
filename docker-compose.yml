@@ -1,0 +1,13 @@
+services:
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:latest
+    container_name: stirling-pdf
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./stirling-data:/configs
+    environment:
+      - DOCKER_ENABLE_SECURITY=true
+      - SECURITY_INITIALLOGIN_USERNAME=${STIRLING_USERNAME}
+      - SECURITY_INITIALLOGIN_PASSWORD=${STIRLING_PASSWORD}
+    restart: unless-stopped
