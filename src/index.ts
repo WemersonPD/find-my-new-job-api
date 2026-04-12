@@ -1,4 +1,5 @@
 import { cvRoutes } from "@/routes/cv";
+import { jobsRoutes } from "@/routes/jobs";
 import { TEN_MB } from "@/shared/constants";
 import { env } from "@/shared/environment";
 import { errorHandler } from "@/shared/errorHandler";
@@ -21,6 +22,7 @@ await app.register(swagger, {
     },
     tags: [
       { name: "CV", description: "CV upload and text extraction" },
+      { name: "Jobs", description: "Job matching against CV" },
       { name: "System", description: "Health and status endpoints" },
     ],
   },
@@ -46,6 +48,8 @@ app.setErrorHandler(errorHandler);
 
 // Routes
 app.register(cvRoutes, { prefix: "/cv" });
+app.register(jobsRoutes, { prefix: "/jobs" });
+// TODO: Move to a route.
 app.get(
   "/health",
   {
