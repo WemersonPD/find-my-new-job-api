@@ -5,7 +5,9 @@ import { env } from "@/shared/environment";
 import { errorHandler } from "@/shared/errorHandler";
 import { success } from "@/shared/types/response";
 import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
 import multipart from "@fastify/multipart";
+import fastifyRedis from "@fastify/redis";
 import swagger from "@fastify/swagger";
 import scalar from "@scalar/fastify-api-reference";
 import Fastify from "fastify";
@@ -41,8 +43,13 @@ await app.register(scalar, {
 });
 
 // Plugins
+await app.register(helmet, {
+  // CSP disabled — the Scalar docs UI requires inline scripts
+  contentSecurityPolicy: false,
+});
 await app.register(cors, { origin: env.CORS_ORIGIN });
 await app.register(multipart, { limits: { fileSize: TEN_MB } });
+await app.register(fastifyRedis, { url: env.REDIS_URL, closeClient: true });
 
 app.setErrorHandler(errorHandler);
 

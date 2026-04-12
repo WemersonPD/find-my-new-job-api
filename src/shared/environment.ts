@@ -15,4 +15,8 @@ export const env = {
   // Apify
   APIFY_API_TOKEN: String(process.env.APIFY_API_TOKEN ?? ""),
   APIFY_MAX_POSTS: Number(process.env.APIFY_MAX_POSTS ?? 20),
+
+  // Redis
+  REDIS_URL: String(process.env.REDIS_URL ?? "redis://localhost:6379"),
+  SESSION_TTL_SECONDS: Number(process.env.SESSION_TTL_SECONDS ?? 600),
 };

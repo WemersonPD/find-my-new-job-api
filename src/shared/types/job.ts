@@ -15,3 +15,8 @@ export type JobMatch = {
   matchScore: number;
   matchReason: string;
 };
+
+export type CvExtractResult = {
+  sessionToken: string;
+  tags: string[];
+};

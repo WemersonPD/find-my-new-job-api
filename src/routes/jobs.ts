@@ -1,20 +1,40 @@
-import { requirePdfFile } from "@/shared/hooks/requirePdfFile";
 import { searchLinkedInPosts } from "@/shared/repositories/apify.repository";
-import { generateSearchQueries, matchJobsToCV } from "@/shared/repositories/claude.repository";
-import { extractCvText } from "@/shared/services/stirling";
+import { matchJobsToCV } from "@/shared/repositories/claude.repository";
+import { getSession } from "@/shared/repositories/session.repository";
 import { failure, success } from "@/shared/types/response";
 import type { FastifyInstance } from "fastify";
 
+type JobMatchBody = {
+  sessionToken: string;
+  tags: string[];
+};
+
 export async function jobsRoutes(app: FastifyInstance) {
-  app.post(
+  app.post<{ Body: JobMatchBody }>(
     "/match",
     {
-      preHandler: requirePdfFile,
       schema: {
         tags: ["Jobs"],
         summary: "Match CV to job posts",
         description:
-          "Upload a CV PDF and receive a ranked list of matching LinkedIn job posts. Uses AI to generate search queries and rank results against your profile.",
+          "Provide a session token (from POST /cv) and optionally edited tags to receive a ranked list of matching LinkedIn job posts. Uses AI to rank results against your profile.",
+        body: {
+          type: "object",
+          required: ["sessionToken", "tags"],
+          properties: {
+            sessionToken: {
+              type: "string",
+              format: "uuid",
+              description: "Session token returned by POST /cv",
+            },
+            tags: {
+              type: "array",
+              items: { type: "string" },
+              minItems: 1,
+              description: "Search query tags (user-reviewed, may differ from AI-generated ones)",
+            },
+          },
+        },
         response: {
           200: {
             description: "Matched jobs ranked by relevance",
@@ -42,26 +62,35 @@ export async function jobsRoutes(app: FastifyInstance) {
               },
             },
           },
+          404: {
+            description: "Session not found or expired",
+            type: "object",
+            properties: {
+              ok: { type: "boolean", example: false },
+              error: { type: "string" },
+            },
+          },
         },
       },
     },
-    async (request) => {
+    async (request, reply) => {
       try {
-        const fileBuffer = await request.uploadedFile.toBuffer();
-        const cvText = await extractCvText(fileBuffer, request.uploadedFile.filename);
+        const { sessionToken, tags } = request.body;
 
-        const { queries } = await generateSearchQueries(cvText);
+        const session = await getSession(request.server, sessionToken);
+        if (!session) {
+          reply.code(404);
+          return failure("Session not found or expired. Please upload your CV again.");
+        }
 
-        const posts = await searchLinkedInPosts(queries);
+        const posts = await searchLinkedInPosts(tags);
 
-        const jobs = await matchJobsToCV(cvText, posts);
+        const jobs = await matchJobsToCV(session.cvText, posts);
 
         return success({ jobs });
       } catch (error) {
         return failure(
-          error instanceof Error
-            ? error.message
-            : "An unknown error occurred while processing the CV.",
+          error instanceof Error ? error.message : "An unknown error occurred while matching jobs.",
         );
       }
     },

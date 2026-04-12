@@ -11,5 +11,12 @@ services:
       - SECURITY_ENABLELOGIN=false
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
 volumes:
   stirling-data:
